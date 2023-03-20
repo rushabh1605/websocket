@@ -12,7 +12,7 @@ function App() {
   const [roomName, setRoomName] = useState('');
   const [userName, setUserName] = useState('');
   const [chat, setChat] = useState([]);
-  //const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('');
   const [messages, setMessages] = useState('');
   const [users, setUsers] = useState([]);
 
@@ -160,7 +160,7 @@ return (
         <div>
           <h2>{roomName} Chat Room</h2>
           <p>Users: {users.join(', ')}</p>
-          <button onClick={handleLeave}>Leave Room</button>
+          <button onClick={userleave}>Leave Room</button>
         </div>
         <div>
           {messages.map(({ userName, message }, index) => (
