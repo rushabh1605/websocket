@@ -8,13 +8,13 @@ function App() {
   const [roomName, setRoomName] = useState('')
   const [userName, setUserName] = useState('')
   const [chat, setChat] = useState([]); */
-  const [state, setState] = useState({message: '', name: ''})
+  const [state, setState] = useState({message: '', userName: ''})
   const [roomName, setRoomName] = useState('');
   const [userName, setUserName] = useState('');
   const [chat, setChat] = useState([]);
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [users, setUsers] = useState([]);
+  //const [message, setMessage] = useState('');
+  //const [messages, setMessages] = useState([]);
+  //const [users, setUsers] = useState([]);
 
   const socketRef = useRef();
 
@@ -34,13 +34,13 @@ function App() {
       setUsers(users)
       setChat(chat => [
         ...chat,
-        {name: 'ChatBot', message: `${userName} has joined the chat`}
+        {name: 'ChatBot', message: `${userName} has joined the chatroom`}
       ]);
     });
 
     socketRef.current.on('user_left', ({ userName, users }) => {
       setUsers(users);
-      setChat(chat => [...chat, { name: 'ChatBot', message: `${userName} left the chat` }]);
+      setChat(chat => [...chat, { name: 'ChatBot', message: `${userName} left the chatroom` }]);
     });
 
 
@@ -62,19 +62,19 @@ function App() {
   };
 
   const userleave = () => {
-    socket.emit('leave', { roomName, userName });
+    socketRef.emit('leave', { roomName, userName });
     setMessages([]);
     setUsers([]);
   };
   
   const handleMessage = e => {
     e.preventDefault();
-    socket.emit('message', { roomName, userName, message });
+    socketRef.emit('message', { roomName, userName, message });
     setMessage('');
   };
 
 
-/*   const onMessageSubmit = (e) => {
+   const onMessageSubmit = (e) => {
     let msgEle = document.getElementById('message');
     console.log([msgEle.name], msgEle.value);
     setState({...state, [msgEle.name]: msgEle.value});
@@ -86,9 +86,9 @@ function App() {
     setState({message: '', name: state.name});
     msgEle.value = '';
     msgEle.focus();
-  }; */
+  }; 
 
-/*   const renderChat = () => {
+   const renderChat = () => {
     console.log('In render chat');
     return chat.map(({name, message}, index) => (
       <div key={index}>
@@ -99,6 +99,8 @@ function App() {
     ));
   };
 
+
+/*
   return (
     <div>
       {state.name && (
@@ -174,11 +176,35 @@ return (
         </form>
       </>
     ) : (
-      <form onSubmit={handleJoin}>
-        <input type="text" placeholder="Room name" value={roomName} onChange={e => setRoomName(e.target.value)} />
+      <form className='form' onSubmit={(e) => {
+        console.log(document.getElementById('username_input').value);
+        e.preventDefault();
+        setState({userName: document.getElementById('username_input').value});
+        setRoomName(document.getElementById('room_input').value)
+        userjoin(document.getElementById('username_input').value);
+        setUserName(document.getElementById('username_input').value)
+        // userName.value = '';
+      }}>
+
+        <div className='form-group'>
+          <label>Room Name: <br/> <input id='room_input'onChange={e => setRoomName(e.target.value)}></input></label>
+            <label>
+              User Name:
+              <br />
+              <input id='username_input' onChange={e => setUserName(e.target.value)}/>
+            </label>
+          </div>
+          <br />
+          <br />
+          <br />
+          <button type='submit'> Click to join</button>
+      </form>
+/*         <input type="text" placeholder="Room name" value={roomName} onChange={e => setRoomName(e.target.value)} />
         <input type="text" placeholder="Username" value={userName} onChange={e => setUserName(e.target.value)} />
         <button type="submit">Join</button>
       </form>
+ */
+
     )}
   </div>
 );
