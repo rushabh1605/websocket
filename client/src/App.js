@@ -181,29 +181,20 @@ return (
         e.preventDefault();
         setState({userName: document.getElementById('username_input').value});
         setRoomName(document.getElementById('room_input').value)
-        userjoin(document.getElementById('username_input').value);
+        userjoin(document.getElementById('username_input').value, );
         setUserName(document.getElementById('username_input').value)
         // userName.value = '';
       }}>
 
         <div className='form-group'>
-          <label>Room Name: <br/> <input id='room_input'onChange={e => setRoomName(e.target.value)}></input></label>
-            <label>
-              User Name:
-              <br />
-              <input id='username_input' onChange={e => setUserName(e.target.value)}/>
-            </label>
+          <label>Room Name: <br/> <input id='room_input'/></label>
+          <label>User Name: <br /> <input id='username_input'/></label>
           </div>
           <br />
           <br />
           <br />
           <button type='submit'> Click to join</button>
       </form>
-/*         <input type="text" placeholder="Room name" value={roomName} onChange={e => setRoomName(e.target.value)} />
-        <input type="text" placeholder="Username" value={userName} onChange={e => setUserName(e.target.value)} />
-        <button type="submit">Join</button>
-      </form>
- */
 
     )}
   </div>
