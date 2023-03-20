@@ -13,8 +13,8 @@ function App() {
   const [userName, setUserName] = useState('');
   const [chat, setChat] = useState([]);
   //const [message, setMessage] = useState('');
-  //const [messages, setMessages] = useState([]);
-  //const [users, setUsers] = useState([]);
+  const [messages, setMessages] = useState('');
+  const [users, setUsers] = useState([]);
 
   const socketRef = useRef();
 
