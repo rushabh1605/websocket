@@ -1,20 +1,11 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
 import './App.css';
 
-
 function App() {
-/*   ;
-  const [roomName, setRoomName] = useState('')
-  const [userName, setUserName] = useState('')
-  const [chat, setChat] = useState([]); */
-  const [state, setState] = useState({message: '', userName: ''})
-  const [roomName, setRoomName] = useState('');
-  const [userName, setUserName] = useState('');
+  const [state, setState] = useState({ message: '', name: '' });
   const [chat, setChat] = useState([]);
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState('');
-  const [users, setUsers] = useState([]);
+  const [room, setRoom] = useState('');
 
   const socketRef = useRef();
 
@@ -25,72 +16,75 @@ function App() {
     };
   }, []);
 
+  // useEffect(() => {
+  //   console.log("hello");
+  //   // socketRef.current.on('joined-room', (roomId) => {
+  //     socketRef.current.emit("join-room", {
+  //             newRoom: roomId,
+  //       previousRoom: room
+  //         });
+  //     //setRoom(roomId);
+  //   // });
+  // }, [room]);
+
   useEffect(() => {
-    socketRef.current.on('message', ({userName, message}) => {
+    socketRef.current.on('message', ({ name, message }) => {
       console.log('The server has sent some data to all clients');
-      setChat(chat => [...chat, {userName, message}]);
+      setChat([...chat, { name, message }]);
     });
-    socketRef.current.on('user_join', ({userName, users}) => {
-      setUsers(users)
-      setChat(chat => [
+    socketRef.current.on('user_join', function (data) {
+
+      setChat([
         ...chat,
-        {name: 'ChatBot', message: `${userName} has joined the chatroom`}
+        { name: 'ChatBot', message: `${data} has joined the chat` }
       ]);
     });
 
-    socketRef.current.on('user_left', ({ userName, users }) => {
-      setUsers(users);
-      setChat(chat => [...chat, { name: 'ChatBot', message: `${userName} left the chatroom` }]);
-    });
-
-
     return () => {
       socketRef.current.off('message');
-      socketRef.current.off('user_join');
-      socketRef.current.off('user_left')
+      socketRef.current.off('user-join');
     };
   }, [chat]);
 
-/*   const userjoin = (name) => {
-    socketRef.current.emit('user_join', name);
-  }; */
-
-  const userjoin = e => {
-    e.preventDefault();
-    socketRef.current.emit('user_leave', { roomName, userName });
-    socketRef.current.emit('user_join', { roomName, userName });
+  const userjoin = (name, roomVal) => {
+    console.log(roomVal);
+    socketRef.current.emit('user_join', { name: name, room: roomVal });
+    socketRef.current.emit("join-room", {
+      newRoom: roomVal,
+      previousRoom: room
+    });
   };
 
-  const userleave = () => {
-    socketRef.emit('leave', { roomName, userName });
-    setMessages([]);
-    setUsers([]);
-  };
-  
-  const handleMessage = e => {
-    e.preventDefault();
-    socketRef.emit('message', { roomName, userName, message });
-    setMessage('');
-  };
-
-
-   const onMessageSubmit = (e) => {
+  const onMessageSubmit = (e) => {
     let msgEle = document.getElementById('message');
-    console.log([msgEle.name], msgEle.value);
-    setState({...state, [msgEle.name]: msgEle.value});
+    console.log([msgEle.name], msgEle.value, room);
+
+    setState({ ...state, [msgEle.name]: msgEle.value });
     socketRef.current.emit('message', {
       name: state.name,
-      message: msgEle.value
+      message: msgEle.value,
+      room: room
     });
     e.preventDefault();
-    setState({message: '', name: state.name});
+    setState({ message: '', name: state.name });
     msgEle.value = '';
     msgEle.focus();
-  }; 
+  };
 
-   const renderChat = () => {
+  // const onRoomChange = (e) => {
+  //   e.preventDefault();
+  //   console.log("onRoomChange");
+  //   let roomEle = document.getElementById('room-selector');
+  //   socketRef.current.emit("join-room", {
+  //                 newRoom: roomEle.value,
+  //           previousRoom: room
+  //             });
+  //   setRoom(roomEle.value);
+  // }
+
+  const renderChat = () => {
     console.log('In render chat');
-    return chat.map(({name, message}, index) => (
+    return chat.map(({ name, message }, index) => (
       <div key={index}>
         <h3>
           {name}: <span>{message}</span>
@@ -99,8 +93,6 @@ function App() {
     ));
   };
 
-
-/*
   return (
     <div>
       {state.name && (
@@ -130,8 +122,10 @@ function App() {
           onSubmit={(e) => {
             console.log(document.getElementById('username_input').value);
             e.preventDefault();
-            setState({name: document.getElementById('username_input').value});
-            userjoin(document.getElementById('username_input').value);
+            setState({ name: document.getElementById('username_input').value });
+            setRoom(document.getElementById('room-selector').value);
+            userjoin(document.getElementById('username_input').value, document.getElementById('room-selector').value);
+
             // userName.value = '';
           }}
         >
@@ -141,6 +135,12 @@ function App() {
               <br />
               <input id='username_input' />
             </label>
+            <select id="room-selector">
+              <option value="">Chat Rooms</option>
+              <option value="general">General</option>
+              <option value="Barcelona">FCB</option>
+              <option value="Real Madrid">RMA</option>
+            </select>
           </div>
           <br />
 
@@ -151,55 +151,6 @@ function App() {
       )}
     </div>
   );
-} */
-
-return (
-  <div>
-    {roomName && userName ? (
-      <>
-        <div>
-          <h2>{roomName} Chat Room</h2>
-          <p>Users: {users.join(', ')}</p>
-          <button onClick={userleave}>Leave Room</button>
-        </div>
-        <div>
-          {messages.map(({ userName, message }, index) => (
-            <div key={index}>
-              <strong>{userName}: </strong>
-              <span>{message}</span>
-            </div>
-          ))}
-        </div>
-        <form onSubmit={handleMessage}>
-          <input type="text" value={message} onChange={e => setMessage(e.target.value)} />
-          <button type="submit">Send</button>
-        </form>
-      </>
-    ) : (
-      <form className='form' onSubmit={(e) => {
-        console.log(document.getElementById('username_input').value);
-        e.preventDefault();
-        setState({userName: document.getElementById('username_input').value});
-        setRoomName(document.getElementById('room_input').value)
-        userjoin(document.getElementById('username_input').value, );
-        setUserName(document.getElementById('username_input').value)
-        // userName.value = '';
-      }}>
-
-        <div className='form-group'>
-          <label>Room Name: <br/> <input id='room_input'/></label>
-          <label>User Name: <br /> <input id='username_input'/></label>
-          </div>
-          <br />
-          <br />
-          <br />
-          <button type='submit'> Click to join</button>
-      </form>
-
-    )}
-  </div>
-);
 }
-
 
 export default App;
